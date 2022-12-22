@@ -1,4 +1,5 @@
 type UInt = u64;
+type Int = i32;
 
 pub fn gcd(mut a: UInt, mut b: UInt) -> UInt {
     if a < b {
@@ -12,12 +13,26 @@ pub fn gcd(mut a: UInt, mut b: UInt) -> UInt {
     a
 }
 
-pub fn log2(value: i32) -> i32 {
+pub fn log2(value: Int) -> Int {
     assert!(value > 0);
-    (32 - (value).leading_zeros() - 1) as i32
+    (Int::BITS - (value).leading_zeros() - 1) as Int
 }
 
-pub fn to_bits(mut val: u32) -> Vec<bool> {
+/// Computes `value ^ pow mod m`
+pub fn pow_mod(value: UInt, mut pow: UInt, m: UInt) -> UInt {
+    let mut value_pow2: UInt = value;
+    let mut res: UInt = 1;
+    while pow > 0 {
+        if pow % 2 == 1 {
+            res = res * value_pow2 % m;
+        }
+        value_pow2 = value_pow2 * value_pow2 % m;
+        pow /= 2;
+    }
+    res
+}
+
+pub fn to_bits(mut val: UInt) -> Vec<bool> {
     assert!(val > 0);
     let mut res: Vec<bool> = Vec::new();
     while val > 0 {
@@ -71,6 +86,23 @@ mod tests {
         assert_eq!(log2(1024), 10);
         assert_eq!(log2(4000), 11);
         assert_eq!(log2(4099), 12);
+    }
+
+    #[test]
+    fn test_pow_mod() {
+        const BIG_NUM: u64 = u64::MAX;
+        assert_eq!(pow_mod(10, 3, BIG_NUM), 1000);
+        assert_eq!(pow_mod(10, 14, BIG_NUM), 100_000_000_000_000);
+        assert_eq!(pow_mod(3, 4, BIG_NUM), 81);
+        assert_eq!(pow_mod(2, 11, BIG_NUM), 2048);
+        assert_eq!(pow_mod(10, 14, BIG_NUM), 100_000_000_000_000);
+        assert_eq!(pow_mod(10, 14, BIG_NUM), 100_000_000_000_000);
+        assert_eq!(pow_mod(4, 3, 123123), 64);
+        assert_eq!(pow_mod(1, 1, 10), 1);
+        assert_eq!(pow_mod(2, 5, 7), 4);
+        assert_eq!(pow_mod(3, 2, 6), 3);
+        assert_eq!(pow_mod(4, 10, 4), 0);
+        assert_eq!(pow_mod(5, 3, 8), 5);
     }
 
     #[test]
